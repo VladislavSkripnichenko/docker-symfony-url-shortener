@@ -1,0 +1,27 @@
+# PHPStorm and other IDE files
+.idea/
+
+# Composer dependencies
+/app/vendor/
+
+# Node dependencies
+/node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Symfony var directory
+/app/var/
+
+# PHP compiled files
+*.php~
+*.swp
+
+# Docker volumes
+/mysql/*
