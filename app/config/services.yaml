@@ -19,6 +19,19 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Service\LinkService:
+        arguments:
+            $linkRepository: '@App\Repository\LinkRepository'
+            $entityManager: '@doctrine.orm.entity_manager'
+
+    App\Repository\LinkRepository:
+        arguments:
+            - '@doctrine'
+
+    App\Controller\LinkController:
+        arguments:
+            $linkService: '@App\Service\LinkService'
+            $entityManager: '@doctrine.orm.entity_manager'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

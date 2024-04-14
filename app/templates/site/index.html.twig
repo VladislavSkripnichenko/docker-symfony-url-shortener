@@ -1,0 +1,87 @@
+{# templates/site/index.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Shortened URL{% endblock %}
+
+{% block body %}
+    <h1>Create Shortened URL</h1>
+    <div class="row">
+        <form id="CreateLinkForm" method="post" action="{{ path('shorten_link') }}">
+            <div class="mb-3">
+                <label for="urlField" class="form-label">URL</label>
+                <input type="url" class="form-control" id="urlField" name="url" placeholder="Enter URL" required>
+                <div id="urlError" class="invalid-feedback" style="display: none;"></div>
+            </div>
+            <div class="mb-3">
+                <label for="expirationDateTimeField" class="form-label">Expiration Date and Time</label>
+                <input type="datetime-local" class="form-control" id="expirationDateTimeField" name="expiration"
+                       value="{{ "now"|date("Y-m-d\\TH:i") }}" required>
+                <div id="expirationError" class="invalid-feedback" style="display: none;"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Shorten URL</button>
+        </form>
+    </div>
+    <div class="row">
+        <div id="result"  style="display: none;">
+            <p class="status-success">Shortened URL: <a id="shortUrl" target="_blank" ></a></p>
+            <button class="btn btn-secondary" id="copyButton">Copy URL</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('CreateLinkForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const url = document.getElementById('urlField').value;
+            const expiration = document.getElementById('expirationDateTimeField').value;
+
+            // Clear previous results and errors
+            document.getElementById('urlError').style.display = 'none';
+            document.getElementById('expirationError').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+
+            fetch('{{ path('shorten_link') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url, expiration }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.errors) {
+                        if (data.errors.url) {
+                            const urlError = document.getElementById('urlError');
+                            urlError.textContent = data.errors.url;
+                            urlError.style.display = 'block';
+                        }
+                        if (data.errors.expiration) {
+                            const expirationError = document.getElementById('expirationError');
+                            expirationError.textContent = data.errors.expiration;
+                            expirationError.style.display = 'block';
+                        }
+                    } else {
+                        // Display the shortened URL and setup copy functionality
+                        const shortUrl = document.getElementById('shortUrl');
+                        shortUrl.textContent = data.shortUrl;
+                        shortUrl.href = data.shortUrl;
+                        document.getElementById('result').style.display = 'block';
+
+                        document.getElementById('copyButton').onclick = function() {
+                            navigator.clipboard.writeText(shortUrl.textContent).then(() => {
+                                alert('URL copied to clipboard!');
+                            }).catch(err => {
+                                console.error('Error copying text: ', err);
+                            });
+                        };
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+{% endblock %}
